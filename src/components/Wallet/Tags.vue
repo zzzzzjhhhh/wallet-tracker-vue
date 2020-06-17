@@ -1,19 +1,46 @@
 <template>
   <div class="tags">
     <div class="newTag">
-      <button>新增标签</button>
+      <button @click="addLabel">新增标签</button>
     </div>
     <div class="current">
-      <div>衣</div>
-      <div>食</div>
-      <div>住</div>
-      <div>行</div>
+      <div
+        v-for="label in labels"
+        :key="label"
+        @click="toggle(label)"
+        :class="{ selected: selectedLabels.indexOf(label) >= 0 }"
+      >
+        {{ label }}
+      </div>
     </div>
   </div>
 </template>
 
-<script>
-export default { name: "Tags" };
+<script lang="ts">
+import Vue from "vue";
+import { Component, Prop } from "vue-property-decorator";
+
+@Component
+export default class Tags extends Vue {
+  @Prop(Array) readonly labels: string[] | undefined;
+  selectedLabels: string[] = [];
+  toggle(label: string) {
+    const index = this.selectedLabels.indexOf(label);
+    if (index >= 0) {
+      this.selectedLabels.splice(index, 1);
+    } else {
+      this.selectedLabels.push(label);
+    }
+  }
+  addLabel() {
+    const name = window.prompt("请输入标签名");
+    if (name === "") {
+      window.prompt("标签名不能为空");
+    } else if (this.labels) {
+      this.$emit("update:labels", [...this.labels, name]);
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -27,13 +54,18 @@ export default { name: "Tags" };
     display: flex;
     flex-wrap: wrap;
     > div {
-      background: #d9d9d9;
+      $bg: #d9d9d9;
+      background: $bg;
       height: 24px;
       padding: 0 16px;
       border-radius: 12px;
       margin-right: 12px;
       line-height: 24px;
       margin-top: 4px;
+      &.selected {
+        background: darken($bg, 50%);
+        color: white;
+      }
     }
   }
   > .newTag {
