@@ -31,6 +31,7 @@ export default class Tags extends Vue {
     } else {
       this.selectedLabels.push(label);
     }
+    this.$emit("update:value", this.selectedLabels);
   }
   addLabel() {
     const name = window.prompt("请输入标签名");
