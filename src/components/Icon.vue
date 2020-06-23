@@ -1,6 +1,6 @@
 <template>
   <div>
-    <svg class="icon">
+    <svg class="icon" :width="width" :height="height" v-on="$listeners">
       <use :xlink:href="'#' + name" />
     </svg>
   </div>
@@ -15,15 +15,23 @@ try {
   console.log(error);
 }
 export default {
-  props: ["name"],
+  props: {
+    name: String,
+    width: {
+      type: [Number, String],
+      default: "1em",
+    },
+    height: {
+      type: [Number, String],
+      default: "1em",
+    },
+  },
   name: "Icon",
 };
 </script>
 
 <style lang="scss" scoped>
 .icon {
-  width: 3em;
-  height: 3em;
   vertical-align: -0.15em;
   fill: currentColor;
   overflow: hidden;

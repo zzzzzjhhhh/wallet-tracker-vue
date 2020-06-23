@@ -1,11 +1,16 @@
 <template>
   <div>
     <Layout classPrefix="layout">
-      {{ recordList }}
       <NumberPad :value.sync="record.amount" @submit="saveRecord" />
-      <Types :type.sync="record.type" />
-      <Notes @update:value="onUpdateNotes" />
-      <Tags :labels.sync="tags" @update:value="onUpdateSelectedLabels" />
+      <Tabs :value.sync="record.type" :dataSource="types" />
+      <div class="note">
+        <BaseForm
+          fieldName="备注"
+          placeholder="在这里输入备注"
+          @update:value="onUpdateNotes"
+        />
+      </div>
+      <Tags :selectedLabels.sync="record.selectedLabels" />
     </Layout>
   </div>
 </template>
@@ -13,46 +18,50 @@
 <script lang="ts">
 import Vue from "vue";
 import NumberPad from "@/components/Wallet/NumberPad.vue";
-import Notes from "@/components/Wallet/Notes.vue";
+import BaseForm from "@/components/BaseForm.vue";
 import Tags from "@/components/Wallet/Tags.vue";
-import Types from "@/components/Wallet/Types.vue";
-import { Component, Watch } from "vue-property-decorator";
+import Tabs from "@/components/Tabs.vue";
+import { Component } from "vue-property-decorator";
+import types from "@/constants/types";
 
-const recordList: Record[] = JSON.parse(
-  window.localStorage.getItem("recordList") || "[]"
-);
-
-type Record = {
+type RecordItem = {
+  id: string;
   selectedLabels: string[];
   notes: string;
   type: string;
   amount: number;
-  createdAt?: Date;
+  createdAt?: string;
 };
 
 @Component({
-  components: { NumberPad, Notes, Tags, Types },
+  components: { NumberPad, BaseForm, Tags, Tabs },
 })
 export default class Wallet extends Vue {
-  tags = ["衣", "食", "住", "行", "玩"];
-  recordList: Record[] = recordList;
-  record: Record = { selectedLabels: [], notes: "", type: "-", amount: 0 };
+  record: RecordItem = this.createFreshRecordObject();
+  types = types;
 
-  onUpdateSelectedLabels(labels: string[]) {
-    this.record.selectedLabels = labels;
+  createFreshRecordObject() {
+    const id = Math.floor(Math.random() * 10000000).toString();
+    return {
+      id: id,
+      selectedLabels: [],
+      notes: "",
+      type: "-",
+      amount: 0,
+    };
   }
   onUpdateNotes(notes: string) {
     this.record.notes = notes;
   }
   saveRecord() {
-    const recordCopy: Record = JSON.parse(JSON.stringify(this.record));
-    recordCopy.createdAt = new Date();
-    this.recordList.push(recordCopy);
+    this.record.createdAt = new Date().toISOString();
+    this.$store.commit("ADD_RECORD", this.record);
+    this.$store.commit("SAVE_RECORDS");
+    this.record = this.createFreshRecordObject();
   }
 
-  @Watch("recordList")
-  onRecordListChange() {
-    window.localStorage.setItem("recordList", JSON.stringify(this.recordList));
+  onUpdateType(type: string) {
+    this.record.type = type;
   }
 }
 </script>
@@ -61,5 +70,8 @@ export default class Wallet extends Vue {
 .layout-content {
   display: flex;
   flex-direction: column-reverse;
+}
+.note {
+  padding: 12px 0;
 }
 </style>
