@@ -58,6 +58,7 @@ export default class Wallet extends Vue {
     this.$store.commit("ADD_RECORD", this.record);
     this.$store.commit("SAVE_RECORDS");
     this.record = this.createFreshRecordObject();
+    window.alert("记账成功！");
   }
 
   onUpdateType(type: string) {
